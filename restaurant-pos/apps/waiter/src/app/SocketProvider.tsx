@@ -86,10 +86,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       if (!data.tickets) return;
       const now = new Date().toISOString();
       setState((prev: any) => ({ ...prev,
+        salesStats: { ...prev.salesStats, totalRevenue: prev.salesStats.totalRevenue + (data.total || 0), totalOrders: prev.salesStats.totalOrders + 1, avgOrderValue: prev.salesStats.totalOrders > 0 ? (prev.salesStats.totalRevenue + (data.total || 0)) / (prev.salesStats.totalOrders + 1) : (data.total || 0), lastUpdate: new Date().toISOString() },
         kitchenTickets: [...data.tickets.map((t: any) => ({ ticketId:t.ticketId, orderId:data.orderId, menuItemName:t.menuItemName, quantity:t.quantity, status:'pending', notes:t.notes, tableNumber:data.tableNumber, station:'main', createdAt:now })), ...prev.kitchenTickets],
         tableStatuses: { ...prev.tableStatuses, [data.tableId || data.tableNumber]: 'order_placed' },
         recentOrders: [{ id:data.orderId, table:data.tableNumber, tableId:data.tableId, items:data.tickets.map((t:any)=>`${t.menuItemName} x${t.quantity}`).join(', '), total:data.total, time:'Just now', status:'pending' }, ...prev.recentOrders],
       }));
+      // Background refetch: analytics endpoints so KPIs update without hard refresh
+      fetch(`${API_URL}/api/data/top-items`).then(r=>r.json()).then(res=>{if(res?.data) setState((prev:any)=>({...prev,topItems:res.data}));}).catch(()=>{});
+      fetch(`${API_URL}/api/data/revenue-7days`).then(r=>r.json()).then(res=>{if(res?.data) setState((prev:any)=>({...prev,revenue7Days:res.data}));}).catch(()=>{});
+      fetch(`${API_URL}/api/data/stats`).then(r=>r.json()).then(res=>{if(res?.data) setState((prev:any)=>({...prev,salesStats:{totalRevenue:res.data.totalRevenue||0,totalOrders:res.data.totalOrders||0,avgOrderValue:res.data.avgOrderValue||0,lastUpdate:new Date().toISOString()}}));}).catch(()=>{});
     });
     socket.on('ticket:status_changed', (data: { ticketId:string; newStatus:string }) => {
       setState((prev: any) => ({ ...prev,

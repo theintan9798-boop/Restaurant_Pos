@@ -40,28 +40,27 @@ const MOCK_TABLES: FloorSection[] = [
 ];
 
 export default function WaiterPOS() {
-  // === ALL HOOKS FIRST — must be called in same order every render ===
   const { isConnected, state, emitOrderCreated, emitTableStatusChange } = useRealtimePOS();
   const { user, logout, isAuthenticated, login } = useAuth();
-
   const liveMenu = state.menuItems;
   const [activeTab, setActiveTab] = useState('main');
   const [selectedTable, setSelectedTable] = useState<TableDto | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (!isAuthenticated || !user) {
+    return <PinPad title="Waiter Terminal" subtitle="Enter your waiter PIN to begin" icon="🍽️" onLogin={login} />;
+  }
 
   const liveTables = useMemo(() => MOCK_TABLES.map(section => ({
     ...section,
-    tables: section.tables.map(t => ({
-      ...t,
-      status: (state.tableStatuses[t.id] || t.status) as TableStatus,
-    })),
+    tables: section.tables.map(t => ({ ...t, status: (state.tableStatuses[t.id] || t.status) as TableStatus })),
   })), [state.tableStatuses]);
 
   const currentSection = useMemo(() => liveTables.find((s) => s.id === activeTab), [liveTables, activeTab]);
-
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
-  const handleTableClick = useCallback((table: TableDto) => { setSelectedTable(table); }, []);
+  const handleTableClick = useCallback((table: TableDto) => { setSelectedTable(table); setSidebarOpen(true); }, []);
   const handleAddToCart = useCallback((item: { id: string; name: string; price: number; category: string }) => {
     const numericPrice = parseFloat(String(item.price));
     setCart((prev) => {
@@ -87,36 +86,32 @@ export default function WaiterPOS() {
   const cartSubtotal = cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
   const tax = cartSubtotal * 0.07;
   const total = cartSubtotal + tax;
-  // === END HOOKS ===
-
-  // === CONDITIONAL RENDER — after all hooks ===
-  if (!isAuthenticated || !user) {
-    return <PinPad title="Waiter Terminal" subtitle="Enter your waiter PIN to begin" icon="🍽️" onLogin={login} />;
-  }
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="bg-indigo-700 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold tracking-tight">🍽️ Restaurant POS</h1>
-          <span className="text-indigo-200 text-sm">Waiter View</span>
+      <header className="bg-indigo-700 text-white px-4 md:px-6 py-3 flex flex-wrap items-center justify-between shadow-lg flex-shrink-0 gap-2">
+        <div className="flex items-center space-x-3 flex-wrap">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">🍽️ POS</h1>
+          <span className="hidden sm:inline text-indigo-200 text-sm">Waiter View</span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}>{isConnected ? '🟢 Live' : '🔴 Offline'}</span>
         </div>
-        <div className="flex items-center space-x-4 text-sm">
-          <span className="text-indigo-200 text-xs">{user?.name || 'Waiter'}</span>
-          <button onClick={logout} className="text-indigo-200 hover:text-white px-3 py-1 rounded border border-indigo-500 hover:border-indigo-300 text-xs" title="Lock / Switch User">🔒 Lock</button>
+        <div className="flex items-center space-x-3 text-sm">
+          <span className="text-indigo-200 text-xs hidden sm:inline">{user?.name || 'Waiter'}</span>
+          <button onClick={logout} className="text-indigo-200 hover:text-white px-3 py-1 rounded border border-indigo-500 hover:border-indigo-300 text-xs" title="Lock / Switch User">🔒</button>
           <span className="bg-indigo-600 px-3 py-1 rounded-full text-xs font-medium">Waiter</span>
         </div>
       </header>
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex bg-white border-b border-gray-200 px-4 pt-2">
+
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Floor Plan — responsive container */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-[300px]">
+          <div className="flex bg-white border-b border-gray-200 px-4 pt-2 overflow-x-auto">
             {liveTables.map((section) => (
-              <button key={section.id} onClick={() => setActiveTab(section.id)} className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${activeTab === section.id ? 'bg-white text-indigo-700 border-x border-t border-gray-200 shadow-sm -mb-px' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>{section.name} <span className="ml-2 text-xs text-gray-400">({section.tables.length})</span></button>
+              <button key={section.id} onClick={() => setActiveTab(section.id)} className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${activeTab === section.id ? 'bg-white text-indigo-700 border-x border-t border-gray-200 shadow-sm -mb-px' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}>{section.name} <span className="ml-1 text-xs text-gray-400">({section.tables.length})</span></button>
             ))}
           </div>
-          <div className="flex-1 bg-gray-50 p-6 overflow-auto">
-            <div className="relative bg-white rounded-xl shadow-inner border border-gray-200" style={{ minHeight: '450px', background: 'repeating-linear-gradient(0deg, #f8fafc, #f8fafc 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 1px, transparent 1px, transparent 40px)' }}>
+          <div className="flex-1 bg-gray-50 p-3 md:p-6 overflow-auto">
+            <div className="relative bg-white rounded-xl shadow-inner border border-gray-200" style={{ minHeight: '350px', minWidth: '500px', background: 'repeating-linear-gradient(0deg, #f8fafc, #f8fafc 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 1px, transparent 1px, transparent 40px)' }}>
               {currentSection?.tables.map((table) => {
                 const colors = STATUS_COLORS[table.status as TableStatus] || STATUS_COLORS.available;
                 const isSelected = selectedTable?.id === table.id;
@@ -134,11 +129,13 @@ export default function WaiterPOS() {
             </div>
           </div>
         </div>
-        <div className="w-[420px] flex flex-col bg-white border-l border-gray-200 flex-shrink-0">
+
+        {/* Sidebar: Menu + Cart — responsive with overlay on mobile */}
+        <div className={`${selectedTable && sidebarOpen ? 'fixed inset-0 z-40 lg:relative lg:inset-auto' : 'hidden lg:flex'} lg:w-[420px] flex-col bg-white border-l border-gray-200 flex-shrink-0`}>
           {selectedTable && (
             <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
               <div><span className="text-sm font-semibold text-gray-800">Table {selectedTable.tableNumber}</span><span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${selectedTable.status === 'available' ? 'bg-emerald-100 text-emerald-700' : selectedTable.status === 'order_placed' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{STATUS_COLORS[selectedTable.status as TableStatus]?.label || 'Available'}</span></div>
-              <button onClick={() => setSelectedTable(null)} className="text-xs text-gray-400 hover:text-gray-600">Close</button>
+              <button onClick={() => { setSelectedTable(null); setSidebarOpen(false); }} className="text-xs text-gray-400 hover:text-gray-600">Close</button>
             </div>
           )}
           <div className="flex-1 overflow-hidden flex flex-col">
@@ -147,7 +144,7 @@ export default function WaiterPOS() {
               {CATEGORY_ORDER.map((cat) => (
                 <div key={cat}><h4 className="text-[10px] font-semibold text-gray-400 uppercase px-1 pb-1">{cat}</h4>
                   {liveMenu.filter((i: any) => i.category === cat).map((item: any) => (
-                    <button key={item.id} onClick={() => handleAddToCart({ id: item.id, name: item.name, price: item.price, category: item.category })} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-between group"><span className="text-sm font-medium text-gray-700">{item.name}</span><span className="text-sm font-semibold text-gray-800 group-hover:text-indigo-600">${parseFloat(String(item.price)).toFixed(2)}</span></button>
+                    <button key={item.id} onClick={() => handleAddToCart({ id: item.id, name: item.name, price: item.price, category: item.category })} className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-between group"><span className="text-sm font-medium text-gray-700 truncate">{item.name}</span><span className="text-sm font-semibold text-gray-800 group-hover:text-indigo-600 ml-2">${parseFloat(String(item.price)).toFixed(2)}</span></button>
                   ))}
                 </div>
               ))}
@@ -157,7 +154,7 @@ export default function WaiterPOS() {
             <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between"><h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cart ({cart.reduce((s, i) => s + i.quantity, 0)} items)</h3>{cart.length > 0 && <button onClick={() => setCart([])} className="text-xs text-red-500 hover:text-red-700">Clear</button>}</div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {cart.length === 0 ? <p className="text-xs text-gray-400 text-center py-4">Tap a menu item to add it</p> : cart.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 pb-1"><div className="flex items-center space-x-2"><button onClick={() => handleUpdateQty(idx, item.quantity - 1)} className="w-5 h-5 rounded-full border border-gray-300 text-xs text-gray-500 hover:bg-gray-100">−</button><span className="w-5 text-center text-xs font-medium">{item.quantity}</span><button onClick={() => handleUpdateQty(idx, item.quantity + 1)} className="w-5 h-5 rounded-full border border-gray-300 text-xs text-gray-500 hover:bg-gray-100">+</button><span className="text-gray-700 truncate max-w-[140px]">{item.menuItemName}</span></div><div className="flex items-center space-x-2"><span className="text-gray-800 font-medium">${(item.unitPrice * item.quantity).toFixed(2)}</span><button onClick={() => handleRemoveItem(idx)} className="text-red-400 hover:text-red-600 text-xs">✕</button></div></div>
+                <div key={idx} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 pb-1"><div className="flex items-center space-x-2"><button onClick={() => handleUpdateQty(idx, item.quantity - 1)} className="w-5 h-5 rounded-full border border-gray-300 text-xs text-gray-500 hover:bg-gray-100">−</button><span className="w-5 text-center text-xs font-medium">{item.quantity}</span><button onClick={() => handleUpdateQty(idx, item.quantity + 1)} className="w-5 h-5 rounded-full border border-gray-300 text-xs text-gray-500 hover:bg-gray-100">+</button><span className="text-gray-700 truncate max-w-[100px] md:max-w-[140px]">{item.menuItemName}</span></div><div className="flex items-center space-x-2"><span className="text-gray-800 font-medium">${(item.unitPrice * item.quantity).toFixed(2)}</span><button onClick={() => handleRemoveItem(idx)} className="text-red-400 hover:text-red-600 text-xs">✕</button></div></div>
               ))}
             </div>
             {cart.length > 0 && (
@@ -171,6 +168,11 @@ export default function WaiterPOS() {
           </div>
         </div>
       </div>
+
+      {/* Mobile overlay backdrop */}
+      {selectedTable && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/30 z-30 lg:hidden" onClick={() => { setSelectedTable(null); setSidebarOpen(false); }} />
+      )}
       {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">{toast}</div>}
     </div>
   );

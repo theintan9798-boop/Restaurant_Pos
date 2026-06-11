@@ -248,32 +248,32 @@ export default function AdminPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
-      <header className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold">🔐 Admin Dashboard</h1>
-          <span className="text-gray-400 text-sm">Full Access</span>
+      <header className="bg-gray-900 text-white px-4 md:px-6 py-3 flex flex-wrap items-center justify-between flex-shrink-0 gap-2">
+        <div className="flex items-center space-x-3 flex-wrap">
+          <h1 className="text-lg md:text-xl font-bold">🔐 Admin</h1>
+          <span className="hidden sm:inline text-gray-400 text-sm">Full Access</span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isConnected ? 'bg-emerald-600' : 'bg-red-600'}`}>{isConnected ? '🟢 Live' : '🔴 Offline'}</span>
         </div>
-        <div className="flex items-center space-x-4 text-sm">
-          <span className="text-gray-400 text-xs">{user?.name || 'Admin'}</span>
-          <button onClick={logout} className="text-gray-400 hover:text-white px-3 py-1 rounded border border-gray-600 hover:border-gray-400 text-xs" title="Lock / Switch User">🔒 Lock</button>
+        <div className="flex items-center space-x-3 text-sm">
+          <span className="text-gray-400 text-xs hidden sm:inline">{user?.name || 'Admin'}</span>
+          <button onClick={logout} className="text-gray-400 hover:text-white px-2 md:px-3 py-1 rounded border border-gray-600 hover:border-gray-400 text-xs" title="Lock / Switch User">🔒 Lock</button>
         </div>
       </header>
-      <div className="flex bg-white border-b border-gray-200 px-6 flex-shrink-0">
+      <div className="flex bg-white border-b border-gray-200 px-4 md:px-6 flex-shrink-0 overflow-x-auto">
         {(['dashboard', 'orders', 'menu', 'users'] as const).map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`py-3 px-5 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`py-3 px-3 md:px-5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
         ))}
       </div>
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 md:p-6">
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
+          <div className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[{ label: 'Today Revenue', value: `$${kpis.revenue}`, change: 'live', color: 'text-emerald-600' },{ label: 'Orders Today', value: String(kpis.orderCount), change: 'live', color: 'text-emerald-600' },{ label: 'Avg Order Value', value: `$${kpis.avgOrder}`, change: 'live', color: 'text-emerald-600' },{ label: 'Active Tables', value: `${kpis.activeTables}/${kpis.totalTables}`, change: `${Math.round((kpis.activeTables / kpis.totalTables) * 100)}%`, color: 'text-blue-600' }].map((kpi, i) => (
-                <div key={i} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm"><p className="text-xs text-gray-500 uppercase tracking-wider">{kpi.label}</p><p className="text-2xl font-bold text-gray-800 mt-1">{kpi.value}</p><p className={`text-xs font-medium mt-0.5 ${kpi.color}`}>{kpi.change === 'live' ? '🔄 Real-time' : kpi.change}</p></div>
+                <div key={i} className="bg-white rounded-xl p-3 md:p-5 border border-gray-200 shadow-sm"><p className="text-xs text-gray-500 uppercase tracking-wider">{kpi.label}</p><p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{kpi.value}</p><p className={`text-xs font-medium mt-0.5 ${kpi.color}`}>{kpi.change === 'live' ? '🔄 Real-time' : kpi.change}</p></div>
               ))}
             </div>
-            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm"><div className="flex items-center justify-between mb-3"><h2 className="text-sm font-semibold text-gray-700">Revenue — Last 7 Days</h2><span className="text-xs text-gray-400">{revenue7Days.length > 0 ? `${revenue7Days.reduce((s, d) => s + d.orders, 0)} orders` : 'No data'}</span></div><RevenueAreaChart data={revenue7Days} /></div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-4 md:p-5 border border-gray-200 shadow-sm"><div className="flex items-center justify-between mb-3"><h2 className="text-sm font-semibold text-gray-700">Revenue — Last 7 Days</h2><span className="text-xs text-gray-400">{revenue7Days.length > 0 ? `${revenue7Days.reduce((s, d) => s + d.orders, 0)} orders` : 'No data'}</span></div><RevenueAreaChart data={revenue7Days} /></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5"><h2 className="text-sm font-semibold text-gray-700 mb-3">Top Selling Items</h2>{topItems.length > 0 ? topItems.slice(0, 5).map((item, i) => (<div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"><div className="flex items-center space-x-3"><span className={`text-lg font-bold w-6 ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-gray-400' : i === 2 ? 'text-amber-700' : 'text-gray-300'}`}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}</span><div><p className="text-sm font-medium text-gray-700">{item.name}</p><p className="text-xs text-gray-400">{item.sold} sold</p></div></div><span className="text-sm font-semibold text-gray-800">${item.revenue.toFixed(2)}</span></div>)) : <p className="text-sm text-gray-400 text-center py-8">No sales data yet — place some orders!</p>}</div>
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5"><h2 className="text-sm font-semibold text-gray-700 mb-3">Live Orders</h2><div className="space-y-2 max-h-64 overflow-y-auto">{recentOrders.length > 0 ? recentOrders.slice(0, 15).map((order, i) => (<div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"><div><div className="flex items-center space-x-2"><span className="text-sm font-semibold text-gray-700">#{order.id.substring(0, 6)}</span><span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{order.table}</span><span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-500'}`}>{order.status}</span></div><p className="text-xs text-gray-400 mt-0.5 truncate max-w-[220px]">{order.items}</p></div><div className="text-right"><p className="text-sm font-semibold text-gray-800">${order.total.toFixed(2)}</p><p className="text-[10px] text-gray-400">{order.time}</p></div></div>)) : <p className="text-sm text-gray-400 text-center py-8">No orders yet</p>}</div></div>
             </div>
