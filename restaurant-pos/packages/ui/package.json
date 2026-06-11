@@ -1,0 +1,11 @@
+{
+  "name": "pos-ui",
+  "version": "1.0.0",
+  "main": "components/index.ts",
+  "private": true,
+  "dependencies": {
+    "shared-types": "*",
+    "react": "^18.3.0",
+    "socket.io-client": "^4.8.0"
+  }
+}
