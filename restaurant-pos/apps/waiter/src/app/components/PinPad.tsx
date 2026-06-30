@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 // ============================================================
-// Reusable PIN Pad Component — dark themed
+// Reusable PIN Pad Component — frosted-glass, modern dark
 // ============================================================
 
 const PIN_KEYS = [
@@ -52,43 +52,34 @@ export function PinPad({ title, subtitle, icon = '🍽️', onLogin }: PinPadPro
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-gray-950">
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
-          20%, 40%, 60%, 80% { transform: translateX(6px); }
-        }
-        .animate-shake { animation: shake 0.4s ease-in-out; }
-      `}</style>
-
-      <div className="w-full max-w-sm mx-4">
+    <div className="app-bg min-h-screen w-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">{icon}</div>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl glass-card shadow-glow mb-4 text-4xl">{icon}</div>
           <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
-          <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+          <p className="text-slate-400 text-sm mt-1">{subtitle}</p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl px-6 py-4 mb-5 text-center">
-          <div id="pin-display" className="flex items-center justify-center space-x-3 min-h-[48px]">
+        <div className="glass-card px-6 py-4 mb-5 text-center">
+          <div id="pin-display" className="flex items-center justify-center space-x-3 min-h-[32px]">
             {pin.length === 0 ? (
-              <span className="text-gray-600 text-sm">----</span>
+              <span className="text-slate-600 text-sm tracking-[0.3em]">••••</span>
             ) : (
               <>
                 {pin.split('').map((_, i) => (
-                  <div key={i} className="w-4 h-4 rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/40" />
+                  <div key={i} className="w-3.5 h-3.5 rounded-full bg-brand-500 shadow-glow" />
                 ))}
                 {Array.from({ length: Math.max(0, 4 - pin.length) }).map((_, i) => (
-                  <div key={`empty-${i}`} className="w-4 h-4 rounded-full border-2 border-gray-700" />
+                  <div key={`empty-${i}`} className="w-3.5 h-3.5 rounded-full border-2 border-white/20" />
                 ))}
               </>
             )}
           </div>
-          {loggingIn && <p className="text-indigo-400 text-xs mt-2 animate-pulse">Verifying...</p>}
+          {loggingIn && <p className="text-brand-400 text-xs mt-3 animate-pulse">Verifying…</p>}
         </div>
 
         {error && (
-          <div className="bg-red-950/50 border border-red-800 text-red-400 text-sm rounded-lg px-4 py-2.5 mb-4 text-center">{error}</div>
+          <div className="glass-card bg-red-500/10 border-red-500/30 text-red-300 text-sm px-4 py-2.5 mb-4 text-center">{error}</div>
         )}
 
         <div className="grid grid-cols-3 gap-3">
@@ -100,12 +91,12 @@ export function PinPad({ title, subtitle, icon = '🍽️', onLogin }: PinPadPro
                 disabled={loggingIn}
                 className={`
                   ${key === 'Clear' || key === '⌫'
-                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium'
-                    : 'bg-gray-800 hover:bg-gray-700 text-white text-2xl font-semibold'}
-                  h-16 rounded-xl transition-all duration-150
-                  active:scale-95 active:bg-gray-600
+                    ? 'bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium border border-white/10'
+                    : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white text-2xl font-semibold'}
+                  h-16 rounded-2xl backdrop-blur transition-all duration-150
+                  active:scale-95 active:bg-white/15
                   disabled:opacity-40 disabled:cursor-not-allowed
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                  focus:outline-none focus:ring-2 focus:ring-brand-500/50
                 `}
               >
                 {key === '⌫' ? (

@@ -74,12 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isRoot = pathname === '/';
     if (!user && !isPublic && !isRoot) { router.replace('/'); return; }
     if (user) {
-      if (isPublic || isRoot) {
-        const correctLogin = ROLE_LOGIN[user.role];
-        if (isPublic && !pathname.startsWith(correctLogin)) { router.replace(correctLogin); return; }
-        if (isRoot && user.role !== 'waiter' && user.role !== 'cashier' && user.role !== 'admin') { router.replace(ROLE_HOME[user.role] || '/'); return; }
-        return;
-      }
+      if (isPublic) { router.replace(ROLE_HOME[user.role] || '/'); return; }
+      if (isRoot) { return; }
       for (const [route, allowedRoles] of Object.entries(ROLE_RESTRICTED)) {
         if (pathname === route || (route !== '/' && pathname.startsWith(route))) {
           if (!allowedRoles.includes(user.role)) { router.replace(ROLE_HOME[user.role] || '/'); return; }

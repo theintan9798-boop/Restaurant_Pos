@@ -94,7 +94,7 @@ router.get(
   requireAuth,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       // TODO: fetch from DB via service
       res.status(200).json({
         success: true,
@@ -117,7 +117,7 @@ router.patch(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { itemId } = req.params;
+      const itemId = String(req.params.itemId);
       const { status } = req.body;
 
       const validStatuses = ['pending', 'cooking', 'ready', 'served', 'cancelled'];
@@ -165,7 +165,7 @@ router.patch(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { id } = req.params;
+      const id = String(req.params.id);
       const { status } = req.body;
 
       // TODO: implement in service
@@ -190,7 +190,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { id } = req.params;
+      const id = String(req.params.id);
       const { tableId } = req.body;
 
       const order = await orderService.requestBill(id, tableId, user.userId);
@@ -218,7 +218,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { id } = req.params;
+      const id = String(req.params.id);
       const {
         paymentMethod,
         amount,
@@ -266,8 +266,8 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { id } = req.params;
-      const { discountCode } = req.body;
+      const id = String(req.params.id);
+      const discountCode = String(req.body.discountCode);
 
       const order = await orderService.applyDiscount(id, discountCode, user.userId);
 

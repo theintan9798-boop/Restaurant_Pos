@@ -11,7 +11,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased bg-gray-100 h-screen overflow-hidden">
+      <body className="antialiased app-bg h-screen overflow-hidden">
         <AuthProvider>
           <SocketProvider>
             {children}

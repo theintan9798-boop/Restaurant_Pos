@@ -2,8 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next {
+html,
+body,
+#__next {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+@layer components {
+  /* Ambient dark background shared by every page — violet top glow, amber bottom glow */
+  .app-bg {
+    @apply bg-slate-950 text-slate-100;
+    background-image:
+      radial-gradient(60% 50% at 50% 0%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
+      radial-gradient(50% 40% at 50% 100%, rgba(217, 119, 6, 0.10) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+
+  /* Frosted-glass surface — the core building block */
+  .glass-card {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl shadow-black/20;
+  }
+
+  .glass-card-hover {
+    @apply glass-card hover:bg-white/[0.07] transition-colors duration-150;
+  }
+
+  /* Compact translucent badge */
+  .pill {
+    @apply inline-flex items-center text-[10px] px-2 py-0.5 rounded-full font-medium;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl
+      shadow-glow transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+      focus:outline-none focus:ring-2 focus:ring-brand-500/60;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200
+      font-medium rounded-xl transition-colors duration-150
+      focus:outline-none focus:ring-2 focus:ring-white/20;
+  }
+
+  /* Hairline divider tuned for dark glass surfaces */
+  .divider {
+    @apply border-white/5;
+  }
+
+  /* Glass form input */
+  .glass-input {
+    @apply w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-slate-500
+      focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 outline-none transition;
+  }
 }
