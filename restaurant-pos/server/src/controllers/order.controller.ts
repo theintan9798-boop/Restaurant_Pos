@@ -19,17 +19,18 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
+      const body = req.body ?? {};
       const {
         tableId,
         orderType,
-        seatCount,
         customerName,
         customerPhone,
         deliveryAddress,
         notes,
         idempotencyKey,
         items,
-      } = req.body;
+      } = body;
+      const seatCount = body.seatCount != null ? Number(body.seatCount) : undefined;
 
       if (!items || !Array.isArray(items) || items.length === 0) {
         res.status(400).json({
@@ -118,7 +119,7 @@ router.patch(
     try {
       const user = (req as any).user as JwtPayload;
       const itemId = String(req.params.itemId);
-      const { status } = req.body;
+      const status = String(req.body?.status ?? '');
 
       const validStatuses = ['pending', 'cooking', 'ready', 'served', 'cancelled'];
       if (!validStatuses.includes(status)) {
@@ -131,7 +132,7 @@ router.patch(
 
       const updated = await orderService.updateOrderItemStatus(
         itemId,
-        status,
+        status as any,
         user.userId
       );
 
@@ -166,7 +167,7 @@ router.patch(
     try {
       const user = (req as any).user as JwtPayload;
       const id = String(req.params.id);
-      const { status } = req.body;
+      const status = String(req.body?.status ?? '');
 
       // TODO: implement in service
       res.status(200).json({
@@ -191,7 +192,7 @@ router.post(
     try {
       const user = (req as any).user as JwtPayload;
       const id = String(req.params.id);
-      const { tableId } = req.body;
+      const tableId = String(req.body?.tableId ?? '');
 
       const order = await orderService.requestBill(id, tableId, user.userId);
 
@@ -219,18 +220,19 @@ router.post(
     try {
       const user = (req as any).user as JwtPayload;
       const id = String(req.params.id);
+      const body = req.body ?? {};
       const {
-        paymentMethod,
-        amount,
         transactionId,
         referenceCode,
         splits,
-      } = req.body;
+      } = body;
+      const paymentMethod = body.paymentMethod != null ? String(body.paymentMethod) : 'cash';
+      const amount = body.amount != null ? Number(body.amount) : 0;
 
       const result = await orderService.processPayment({
         orderId: id,
         paymentMethod: paymentMethod || 'cash',
-        amount: amount || parseFloat(req.body.amount),
+        amount,
         cashierId: user.userId,
         transactionId,
         referenceCode,
@@ -267,7 +269,7 @@ router.post(
     try {
       const user = (req as any).user as JwtPayload;
       const id = String(req.params.id);
-      const discountCode = String(req.body.discountCode);
+      const discountCode = String(req.body?.discountCode ?? '');
 
       const order = await orderService.applyDiscount(id, discountCode, user.userId);
 
@@ -293,7 +295,8 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { orderId, toTableId } = req.body;
+      const orderId = String(req.body?.orderId ?? '');
+      const toTableId = String(req.body?.toTableId ?? '');
 
       await orderService.transferOrder(orderId, toTableId, user.restaurantId);
 
@@ -319,7 +322,8 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const user = (req as any).user as JwtPayload;
-      const { sourceTableId, targetTableId } = req.body;
+      const sourceTableId = String(req.body?.sourceTableId ?? '');
+      const targetTableId = String(req.body?.targetTableId ?? '');
 
       await orderService.mergeTables(sourceTableId, targetTableId, user.restaurantId);
 
